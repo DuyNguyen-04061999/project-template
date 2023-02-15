@@ -1,11 +1,11 @@
 // import { useAuth } from "@/hooks/useAuth"
-import { useAuth } from "@/hooks/useAuth"
-import { Navigate, Outlet, useLocation } from "react-router-dom"
+import { useAuth } from "@/hooks/useAuth";
+import { Navigate, Outlet } from "react-router-dom";
 
-export const PrivateRoute = ({ redirect = '/' }) => {
-    const { user } = useAuth()
+export const PrivateRoute = ({ redirect = "/" }) => {
+  const { user } = useAuth();
 
-    if (!user) return <Navigate to={redirect} />
+  if (!user) return <Navigate to={redirect} />;
 
-    return <Outlet />
-}
+  return <Outlet />;
+};

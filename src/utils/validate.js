@@ -1,108 +1,103 @@
-
-// rules = {
-//     name: [
-//         { required: true }
-//     ],
-//     email: [
-//         { required: true },
-//         { regex: 'email' }
-//     ],
-//     phone: [
-//         { required: true },
-//         { regex: 'phone' }
-//     ]
-// }
-
-
-// forms = {
-//     name: 'Dang Thuyen Vuong',
-//     email: 'dangthuyenvuong@gmail.com',
-//     phone: '0949816596'
-// }
-
-// errorObj = {
-//     name: 'Please fill in this field'
-// }
-
+const ERROR_MESSAGE = {
+  require: "Vui lòng điền vào trường này",
+  regex: "Vui lòng điền giá trị đúng",
+  minMax: (min, max) =>
+    `Vui lòng điền giá trị có độ dài trong khoản ${min} - ${max}`,
+  min: (min) => `Vui lòng điền giá trị có độ dài tối thiểu là ${min}`,
+  confirm: "Giá trị chưa chính xác",
+};
 
 const REGEXP = {
-    email: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
-    phone: /(84|0[3|5|7|8|9])+([0-9]{8})\b/,
-    url: /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/
-}
+  email:
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+  website:
+    /[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/,
+  facebook:
+    /(?:https?:\/\/)?(?:www\.)?(mbasic.facebook|m\.facebook|facebook|fb)\.(com|me)\/(?:(?:\w\.)*#!\/)?(?:pages\/)?(?:[\w\-\.]*\/)*([\w\-\.]*)/,
+};
 
-const ERROR_MESSAGE = {
-    required: 'Please fill in this field',
-    regexp: 'Field not like format',
-    minMax: (min, max) => `Xin vui lòng nhập từ ${min}-${max} ký tự`,
-    confirm: (field) => `Xin vui lòng điến giống ${field}`
-}
+export default function validate(rules = {}, form = {}) {
+  const errObj = {};
 
-/**
- * 
- * @param {*} rules
- * @param {*} form 
- * @returns plan error object
- */
-export const validate = (rules, forms) => {
-    const errorObject = {}
-    for (let name in rules) {
-        for (let rule of rules[name]) {
-            if (rule.required) {
-                if(typeof forms[name] === 'boolean' && !forms[name]) {
-
-                }else if (typeof forms[name] !== 'boolean' && !forms[name]?.trim?.()) {
-                    errorObject[name] = rule.message || ERROR_MESSAGE.required
-                    break;
-                }
-            }
-
-
-            if (rule.regexp && forms[name]) {
-                let regexp = rule.regexp
-                if (regexp in REGEXP) {
-                    regexp = REGEXP[regexp]
-                } else if (!(regexp instanceof RegExp)) {
-                    regexp = new RegExp()
-                }
-
-                if (!regexp.test(forms[name])) {
-                    errorObject[name] = rule.message || ERROR_MESSAGE.regexp
-                }
-            }
-
-            if (rule.min || rule.max) {
-                if (forms[name]?.length < rule.min || forms[name]?.length > rule.max) {
-                    errorObject[name] = rule.message || ERROR_MESSAGE.minMax(rule.min, rule.max)
-                }
-            }
-
-            if(rule.confirm) {
-                if(forms[rule.confirm] !== forms[name]) {
-                    errorObject[name] = rule.message || ERROR_MESSAGE.confirm(rule.confirm)
-                }
-            }
+  for (const name in rules) {
+    for (const rule of rules[name]) {
+      if (rule.require) {
+        if (
+          (typeof form[name] === "boolean" && !form[name]) ||
+          (typeof form[name] !== "boolean" && !form[name]?.trim())
+        ) {
+          errObj[name] = rule.message || ERROR_MESSAGE.require;
         }
-    }
+      }
 
-    return errorObject
+      if (typeof form[name] !== "boolean" && form[name]?.trim()) {
+        if (typeof rule === "function") {
+          const message = rule(form[name], form);
+          message && (errObj[name] = message);
+          break;
+        }
+
+        if (rule.regex) {
+          let regex = rule.regex;
+
+          if (regex in REGEXP) {
+            regex = REGEXP[regex];
+          } else if (!(regex instanceof RegExp)) {
+            regex = new RegExp();
+          }
+
+          if (!regex.test(form[name]?.trim())) {
+            errObj[name] = rule.message || ERROR_MESSAGE.regex;
+          }
+        }
+
+        if (rule.min && rule.max) {
+          if (form[name].length < min || form[name].length > max) {
+            errObj[name] =
+              rule.message || ERROR_MESSAGE.minMax(rule.min, rule.max);
+          }
+        }
+
+        if (rule.min) {
+          if (form[name].length < rule.min) {
+            errObj[name] = rule.message || ERROR_MESSAGE.min(rule.min);
+          }
+        }
+
+        if (rule.confirm) {
+          if (form[rule.confirm] !== form[name]) {
+            errObj[name] = rule.message || ERROR_MESSAGE.confirm;
+          }
+        }
+      }
+    }
+  }
+
+  return errObj;
 }
 
-export const required = (message) => ({
-    required: true,
-    message
-})
+export const require = ({ require = true, message } = {}) => ({
+  require,
+  message,
+});
 
-export const regexp = (pattern, message) => ({
-    regexp: pattern,
-    message
-})
+export const regex = (regex, message) => ({
+  regex,
+  message,
+});
 
+export const min = (min, message) => ({
+  min,
+  message,
+});
 
 export const minMax = (min, max, message) => ({
-    min, max, message
-})
+  min,
+  max,
+  message,
+});
 
-export const confirm = (field) => ({
-    confirm: field
-})
+export const confirm = (confirm, message) => ({
+  confirm,
+  message,
+});

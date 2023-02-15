@@ -1,3 +1,8 @@
-export const currency = (money) => {
-    return new Intl.NumberFormat().format(money)
-}
+const currency = (number) => {
+  return new Intl.NumberFormat("it-IT", {
+    style: "currency",
+    currency: "VND",
+  }).format(number);
+};
+
+export default currency;

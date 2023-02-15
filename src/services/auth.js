@@ -1,14 +1,13 @@
-import { AUTH_API } from "@/config/api"
-import { http } from "@/utils/http"
+import { api, AUTH_API } from "@/config";
 
 export const authService = {
-    login(form){
-        return http.post(`${AUTH_API}/login`, form)
-    },
-    getProfile(){
-        return http.get(`${AUTH_API}`)
-    },
-    refreshToken(data){
-        return http.post(`${AUTH_API}`, data)
-    }
-}
+  login(form) {
+    return api.post(`${AUTH_API}/login`, form);
+  },
+  getProfile() {
+    return api.get(`${AUTH_API}`);
+  },
+  refreshToken(data) {
+    return api.post(`${AUTH_API}`, data);
+  },
+};
