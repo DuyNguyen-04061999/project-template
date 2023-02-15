@@ -16,4 +16,3 @@ export function interceptorsRequest(api) {
   );
 }
 
-export default interceptorsRequest;
